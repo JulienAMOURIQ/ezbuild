@@ -13,7 +13,7 @@ s_MSG_TELECHARGE="Téléchargement du fichier en cours. Le temps de l'opération
 s_MSG_EXTRACT="Extraction en cours. Le temps de l'opération dépend des ressources CPU disponibles. Veuillez patienter..."
 s_MSG_QUELLECONFIG="Veuillez entrer manuellement la ligne de configuration:"
 s_MSG_retelecharger="Le fichier semble déjà avoir été téléchargé. Voulez-vous utiliser le fichier déjà existant?(Sans réponse de votre part d'ici 15 secondes, le fichier sera téléchargé à nouveau)"
-
+s_MSGERR_ARCHIVEINVALIDE="Le fichier téléchargé est corrompu ou n'est pas actuellement pris en charge par EZ-Build"
 s_MSGERR_NODIALOG="Erreur: le paquet dialog n'est pas installé"
 
 dialog --help > /dev/null
@@ -79,6 +79,19 @@ mkdir /tmp/EZSetup
 rm -Rf /tmp/EZSetup
 mkdir /tmp/EZSetup
 
+#Vérifie la validité d'une archive
+#entrée:$1: chemin complet de l'archive à vérifier
+#sortie: 1 si valide, 0 si invalide
+archivevalide(){
+	tar -tzf config.log >/dev/null 2> /dev/null
+	if ! [ $? -eq 0 ];then
+		dialog --title "$s_NOM $s_VERSION" --msgbox "$s_MSGERR_ARCHIVEINVALIDE($(basename $1))" $i_HAUTEURFEN $i_LARGEURFEN
+		exit 21
+		return 1
+	fi
+	return 0
+}
+archivevalide $fichiercompresse
 (pv -n $fichiercompresse | tar xzf - -C /tmp/EZSetup ) 2>&1 | dialog --title "$s_NOM $s_VERSION" --gauge "$s_MSG_EXTRACT" $i_HAUTEURFEN $i_LARGEURFEN
 #Le fichier est décompressé
 
