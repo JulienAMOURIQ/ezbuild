@@ -1,13 +1,8 @@
 #!/bin/sh
-dialog --help > /dev/null
-if ! [ $? -eq 0 ]; then
-	echo "Erreur: le paquet dialog n'est pas installé"
-	exit 20
-fi
 
 #--- Constantes globales ---
 s_NOM="EZ-Build"
-s_VERSION="0.1" 
+s_VERSION="0.2" 
 i_HAUTEURFEN=10
 i_LARGEURFEN=50
 
@@ -18,6 +13,16 @@ s_MSG_TELECHARGE="Téléchargement du fichier en cours. Le temps de l'opération
 s_MSG_EXTRACT="Extraction en cours. Le temps de l'opération dépend des ressources CPU disponibles. Veuillez patienter..."
 s_MSG_QUELLECONFIG="Veuillez entrer manuellement la ligne de configuration:"
 s_MSG_retelecharger="Le fichier semble déjà avoir été téléchargé. Voulez-vous utiliser le fichier déjà existant?(Sans réponse de votre part d'ici 15 secondes, le fichier sera téléchargé à nouveau)"
+
+s_MSGERR_NODIALOG="Erreur: le paquet dialog n'est pas installé"
+
+dialog --help > /dev/null
+if ! [ $? -eq 0 ]; then
+	echo $s_MSGERR_NODIALOG
+	exit 20
+fi
+
+
 #vérifie qu'un programme est installé.Dans le cas contraire stop le script après avoir affiché un message
 #entree: $1 nom du programme
 #sortie: néant
@@ -50,7 +55,7 @@ verif make
 verif awk
 
 dialog --title "$s_NOM $s_VERSION" --msgbox "$s_MSG_BIENVENUE" $i_HAUTEURFEN $i_LARGEURFEN
-dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLEADRESSE" $i_HAUTEURFEN $i_LARGEURFEN "http://"  2>  /tmp/tmpez
+dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLEADRESSE" $i_HAUTEURFEN $i_LARGEURFEN "http://site.com/sources.zip"  2>  /tmp/tmpez
 adresse=$(cat /tmp/tmpez)
 
 #Téléchargement du fichier
@@ -86,7 +91,6 @@ getDossier(){
 }
 dossierTravail=$(getDossier)
 
-dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLECONFIG" $i_HAUTEURFEN $i_LARGEURFEN "configure"  2>  /tmp/tmpez
+dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLECONFIG" $i_HAUTEURFEN $i_LARGEURFEN "./configure --prefix=/tmp/EZSetup/mpich --disable-fortran"  2>  /tmp/tmpez
 ligneconf=$(cat /tmp/tmpez)
 $dossierTravail/$ligneconf
-
