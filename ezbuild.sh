@@ -11,7 +11,8 @@ s_MSGERR_PAQUET="Erreur:Un paquet nécessaire au bon fonctionnement du programme
 s_MSG_QUELLEADRESSE="Veuillez indiquer l'adresse internet du fichier compressé contenant les sources"
 s_MSG_TELECHARGE="Téléchargement du fichier en cours. Le temps de l'opération dépend de la rapidité de votre connexion internet. Veuillez patienter..."
 s_MSG_EXTRACT="Extraction en cours. Le temps de l'opération dépend des ressources CPU disponibles. Veuillez patienter..."
-s_MSG_QUELLECONFIG="Veuillez entrer manuellement la ligne de configuration:"
+s_MSG_QUELLECONFIG="Veuillez entrer la ligne de configuration:(dans le doute laissez la chaine par défaut)"
+s_MSG_QUELMAKE="Veuillez entrer la commande make: (dans le doute laissez la commande par défaut)"
 s_MSG_retelecharger="Le fichier semble déjà avoir été téléchargé. Voulez-vous utiliser le fichier déjà existant?(Sans réponse de votre part d'ici 15 secondes, le fichier sera téléchargé à nouveau)"
 s_MSGERR_ARCHIVEINVALIDE="Le fichier téléchargé est corrompu ou n'est pas actuellement pris en charge par EZ-Build"
 s_MSGERR_NODIALOG="Erreur: le paquet dialog n'est pas installé"
@@ -113,6 +114,19 @@ getDossierResExtraction(){
 }
 dossierTravail=$(getDossierResExtraction)
 
-dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLECONFIG" $i_HAUTEURFEN $i_LARGEURFEN "/configure ; make"  2>  $s_TMPDIALOG
+dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLECONFIG" $i_HAUTEURFEN $i_LARGEURFEN "configure"  2>  $s_TMPDIALOG
 ligneconf=$(cat $s_TMPDIALOG)
-$dossierTravail/$ligneconf
+cd $dossierTravail
+$dossierTravail/$ligneconf > "$s_TMPDIREXTRACT/config.log" 2>&1
+
+if ! [ $? -eq 0 ];then
+	echo "EZ-BUILD:une erreur s'est produite...." > "$s_TMPDIREXTRACT/config.logdialog"
+	echo "--------------------------------------" >> "$s_TMPDIREXTRACT/config.logdialog"
+	tail -n 8 "$s_TMPDIREXTRACT/config.log" >> "$s_TMPDIREXTRACT/config.logdialog"
+	dialog --textbox "$s_TMPDIREXTRACT/config.logdialog" $i_HAUTEURFEN 80
+	exit 1
+fi
+
+dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELMAKE" $i_HAUTEURFEN $i_LARGEURFEN "make"  2>  $s_TMPDIALOG
+lignemake=$(cat $s_TMPDIALOG)
+$dossierTravail/$lignemake
