@@ -2,7 +2,7 @@
 
 #--- Constantes globales ---
 s_NOM="EZ-Build"
-s_VERSION="0.2" 
+s_VERSION="0.2RC" 
 i_HAUTEURFEN=10
 i_LARGEURFEN=50
 
