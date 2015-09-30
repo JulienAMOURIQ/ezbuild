@@ -5,7 +5,7 @@ if ! [ $? -eq 0 ]; then
 	exit 20
 fi
 
-#--- Constantes globales ---
+#--- Constantes globales ----
 s_NOM="EZ-Build"
 s_VERSION="0.1" 
 i_HAUTEURFEN=10
