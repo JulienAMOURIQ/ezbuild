@@ -29,25 +29,31 @@ verif(){
 		exit 20
 	fi
 }
+
+#télécharge le fichier à l'adresse passée en paramètre en affichant la progression
+#entrée: $1: URL du fichier à télécharger
+#sortie: néant
+gwget(){
+        local URL=$1
+        cd /tmp/
+        wget "$URL" 2>&1 | \
+         stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | \
+         dialog --title "$s_NOM $s_VERSION" --gauge "$s_MSG_TELECHARGE" $i_HAUTEURFEN $i_LARGEURFEN
+}
+
+
+
+
 verif pv
 verif wget
 verif make
 verif awk
 
 dialog --title "$s_NOM $s_VERSION" --msgbox "$s_MSG_BIENVENUE" $i_HAUTEURFEN $i_LARGEURFEN
-dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLEADRESSE" $i_HAUTEURFEN $i_LARGEURFEN "http://site.com/sources.zip"  2>  /tmp/tmpez
+dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLEADRESSE" $i_HAUTEURFEN $i_LARGEURFEN "http://"  2>  /tmp/tmpez
 adresse=$(cat /tmp/tmpez)
 
-#télécharge le fichier à l'adresse passée en paramètre en affichant la progression
-#entrée: $1: URL du fichier à télécharger
-#sortie: néant
-gwget(){
-	local URL=$1
-	cd /tmp/
-	wget "$URL" 2>&1 | \
-	 stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | \
-	 dialog --title "$s_NOM $s_VERSION" --gauge "$s_MSG_TELECHARGE" $i_HAUTEURFEN $i_LARGEURFEN
-}
+#Téléchargement du fichier
 fichiercompresse="/tmp/$(basename $adresse)"
 if [ -e $fichiercompresse ] ;then
 	dialog --title "$s_NOM $s_VERSION" --timeout 15 --defaultno --yesno  "$s_MSG_retelecharger" $i_HAUTEURFEN $i_LARGEURFEN 
@@ -60,19 +66,27 @@ if ! [ -e $fichiercompresse ];then
 	gwget $adresse
 fi
 
+#Le fichier est téléchargé
+
+
+#Décompression du fichier
 mkdir /tmp/EZSetup
 rm -Rf /tmp/EZSetup
 mkdir /tmp/EZSetup
 
 (pv -n $fichiercompresse | tar xzf - -C /tmp/EZSetup ) 2>&1 | dialog --title "$s_NOM $s_VERSION" --gauge "$s_MSG_EXTRACT" $i_HAUTEURFEN $i_LARGEURFEN
+#Le fichier est décompressé
 
+#Récupère le chemin complet du dossier où ont été extraites les données.
+#entrée:néant
+#sortie:chemin complet du dossier
 getDossier(){
 	cd /tmp/EZSetup
 	echo "/tmp/EZSetup/$(ls | tail -n 1)"
 }
 dossierTravail=$(getDossier)
 
-dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLECONFIG" $i_HAUTEURFEN $i_LARGEURFEN "./configure --prefix=/tmp/EZSetup/mpich --disable-fortran"  2>  /tmp/tmpez
+dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELLECONFIG" $i_HAUTEURFEN $i_LARGEURFEN "configure"  2>  /tmp/tmpez
 ligneconf=$(cat /tmp/tmpez)
 $dossierTravail/$ligneconf
 
