@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#--- Constantes globales ---
+#--- Constantes globales ----
 s_NOM="EZ-Build"
 s_VERSION="0.2RC" 
 i_HAUTEURFEN=10
