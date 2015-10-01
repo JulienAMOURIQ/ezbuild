@@ -6,6 +6,12 @@ s_VERSION="0.2RC"
 i_HAUTEURFEN=10
 i_LARGEURFEN=50
 
+s_TMPROOT="/tmp/EZBuild"
+s_TMPDIALOG="$s_TMPROOT/tmpdialog"
+s_TMPDIRDDL="$s_TMPROOT/telechargement"
+s_TMPDIREXTRACT="$s_TMPROOT/extraction"
+
+
 s_MSG_BIENVENUE="Bonjour. Bienvenue dans EZ-Setup !"
 s_MSGERR_PAQUET="Erreur:Un paquet nécessaire au bon fonctionnement du programme n'est pas installé.Vérifiez que le paquet suivant est installé:"
 s_MSG_QUELLEADRESSE="Veuillez indiquer l'adresse internet du fichier compressé contenant les sources"
@@ -16,11 +22,7 @@ s_MSG_QUELMAKE="Veuillez entrer la commande make: (dans le doute laissez la comm
 s_MSG_retelecharger="Le fichier semble déjà avoir été téléchargé. Voulez-vous utiliser le fichier déjà existant?(Sans réponse de votre part d'ici 15 secondes, le fichier sera téléchargé à nouveau)"
 s_MSGERR_ARCHIVEINVALIDE="Le fichier téléchargé est corrompu ou n'est pas actuellement pris en charge par EZ-Build"
 s_MSGERR_NODIALOG="Erreur: le paquet dialog n'est pas installé"
-
-s_TMPROOT="/tmp/EZBuild"
-s_TMPDIALOG="$s_TMPROOT/tmpdialog"
-s_TMPDIRDDL="$s_TMPROOT/telechargement"
-s_TMPDIREXTRACT="$s_TMPROOT/extraction"
+s_MSG_FINREUSSITE="La compilation s'est terminée avec succès. Vous pouvez trouver les fichiers générés dans le dossier $s_TMPDIREXTRACT"
 
 dialog --help > /dev/null
 if ! [ $? -eq 0 ]; then
@@ -122,11 +124,20 @@ $dossierTravail/$ligneconf > "$s_TMPDIREXTRACT/config.log" 2>&1
 if ! [ $? -eq 0 ];then
 	echo "EZ-BUILD:une erreur s'est produite...." > "$s_TMPDIREXTRACT/config.logdialog"
 	echo "--------------------------------------" >> "$s_TMPDIREXTRACT/config.logdialog"
-	tail -n 8 "$s_TMPDIREXTRACT/config.log" >> "$s_TMPDIREXTRACT/config.logdialog"
-	dialog --textbox "$s_TMPDIREXTRACT/config.logdialog" $i_HAUTEURFEN 80
+	tail -n 5 "$s_TMPDIREXTRACT/config.log" >> "$s_TMPDIREXTRACT/config.logdialog"
+	dialog --textbox "$s_TMPDIREXTRACT/config.logdialog" 15 70
 	exit 1
 fi
 
 dialog --title "$s_NOM $s_VERSION" --nocancel --inputbox "$s_MSG_QUELMAKE" $i_HAUTEURFEN $i_LARGEURFEN "make"  2>  $s_TMPDIALOG
 lignemake=$(cat $s_TMPDIALOG)
-$dossierTravail/$lignemake
+$dossierTravail/$lignemake  > "$s_TMPDIREXTRACT/make.log" 2>&1
+if ! [ $? -eq 0 ];then
+        echo "EZ-BUILD:une erreur s'est produite...." > "$s_TMPDIREXTRACT/make.logdialog"
+        echo "--------------------------------------" >> "$s_TMPDIREXTRACT/make.logdialog"
+        tail -n 5 "$s_TMPDIREXTRACT/make.log" >> "$s_TMPDIREXTRACT/make.logdialog"
+        dialog --textbox "$s_TMPDIREXTRACT/make.logdialog" 15 70
+        exit 1
+fi
+
+dialog --title "$s_NOM $s_VERSION" --msgbox "$s_MSG_FINREUSSITE" $i_HAUTEURFEN $i_LARGEURFEN
